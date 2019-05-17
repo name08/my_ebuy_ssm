@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为IUserDao接口方法提供sql语句配置 -->
+<mapper namespace="com.lyh.my_ebuy_ssm.dao.AdminDao">
+
+    <resultMap id="AdminMapper" type="com.lyh.my_ebuy_ssm.model.Admin">
+        <id property="id" column="id"></id>
+        <result column="username" property="username"></result>
+        <result column="password" property="password"></result>
+        <result column="nickname" property="nickname"></result>
+        <result column="createTime" property="createTime"></result>
+    </resultMap>
+
+    <!--根据id查询用户-->
+    <select id="selectAdmin" resultType="com.lyh.my_ebuy_ssm.model.Admin" parameterType="int">
+        SELECT * FROM admin WHERE id = #{id}
+    </select>
+    <!--用户登陆-->
+    <select id="login" resultType="com.lyh.my_ebuy_ssm.model.Admin">
+        SELECT * FROM admin WHERE username = #{username} AND password = #{password}
+    </select>
+    <!--添加用户-->
+    <insert id="addAdmin"  useGeneratedKeys="true"
+            keyProperty="id" parameterType="com.lyh.my_ebuy_ssm.model.Admin">
+        INSERT INTO admin (id,username,password,nickname,createTime)
+        VALUES (NULL,#{username},#{password},#{nickname},#{createTime})
+    </insert>
+    <!--更新用户-->
+    <update id="updateAdmin">
+      UPDATE admin
+      <set>
+          <if test="username!=null and username.trim().length()>0">
+              username = #{username},
+          </if>
+          <if test="password!=null and password.trim().length()>0">
+              password = #{password},
+          </if>
+          <if test="nickname!=null and nickname.trim().length()>0">
+              nickname = #{nickname},
+          </if>
+          <if test="updateTime!=null">
+              updateTime = #{updateTime}
+          </if>
+      </set>
+      <where>
+          <if test="id!=null">
+              AND id = #{id}
+          </if>
+      </where>
+    </update>
+    <!--删除用户-->
+    <delete id="deleteAdmin">
+      DELETE FROM admin WHERE id = #{id}
+    </delete>
+    <!--重置密码-->
+    <update id="updatePassword">
+         UPDATE admin
+        <set>
+        <if test="username!=null and username.trim().length()>0">
+            username = #{username},
+        </if>
+        <if test="password!=null and password.trim().length()>0">
+            password = #{password},
+        </if>
+        <if test="nickname!=null and nickname.trim().length()>0">
+            nickname = #{nickname}
+        </if>
+        </set>
+        <where>
+            <if test="id!=null">
+                AND id = #{id}
+            </if>
+        </where>
+    </update>
+
+    <!--查询是否存在用户-->
+    <select id="existAdmin" parameterType="String" resultType="int">
+        SELECT COUNT(id) FROM admin
+        <where>
+            username = #{username}
+            <if test="id!=null"> AND id!=#{id}</if>
+        </where>
+    </select>
+
+    <!--分页查询所有用户-->
+    <select id="listAdmin" resultMap="AdminMapper">
+        SELECT * FROM admin LIMIT #{firstIndex},#{pageSize}
+    </select>
+
+    <!--查询所有用户数-->
+    <select id="AdminCount" resultType="int">
+        SELECT COUNT(*) FROM admin
+    </select>
+
+
+
+</mapper>

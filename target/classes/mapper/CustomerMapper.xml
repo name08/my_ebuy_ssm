@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为CustomerDao接口方法提供sql语句配置 -->
+<mapper namespace="com.lyh.my_ebuy_ssm.dao.CustomerDao">
+
+    <resultMap id="customerMapper" type="com.lyh.my_ebuy_ssm.model.Customer">
+        <id property="id" column="id"></id>
+        <result property="c_username" column="c_username"></result>
+        <result property="c_password" column="c_password"></result>
+        <result property="c_sex" column="c_sex"></result>
+        <result property="c_nickName" column="c_nickName"></result>
+        <result property="c_telephone" column="c_telephone"></result>
+        <result property="c_address" column="c_address"></result>
+        <result property="c_zipCode" column="c_zipCode"></result>
+        <result property="c_email" column="c_email"></result>
+        <result property="c_picUrl" column="c_picUrl"></result>
+        <result property="c_intro" column="c_intro"></result>
+        <result property="c_createTime" column="c_createTime"></result>
+    </resultMap>
+
+    <!--普通查询-->
+    <select id="queryCustomersPage" parameterType="int" resultMap="customerMapper">
+        SELECT * FROM customer LIMIT #{firstIndex},#{pageSize}
+    </select>
+    <!--统计普通查询数量-->
+    <select id="CustomerCount" resultType="int">
+        SELECT COUNT(*) FROM customer
+    </select>
+    <!--用户注册-->
+    <insert id="CustomerRegist">
+        INSERT INTO customer (id,c_username,c_password,c_nickName,c_sex,c_telephone,c_email,c_createTime) VALUES (NULL,#{c_username},#{c_password},#{c_nickName},#{c_sex},#{c_telephone},#{c_email},#{c_createTime})
+    </insert>
+    <!--查询订单数量-->
+    <select id="getOrderNumber" parameterType="int" resultType="int">
+        SELECT COUNT(orderNo) FROM orders  WHERE o_customerId = #{id}
+    </select>
+    <!--查询订单金额-->
+    <select id="getOrderPrice" parameterType="int" resultType="Double">
+        SELECT SUM(od_price*od_number) FROM orderdetail,orders,customer WHERE orderdetail.orderNo = orders.orderNo AND orders.o_customerId = customer.id AND o_customerId = #{id}
+    </select>
+
+    <!--根据条件查询用户-->
+    <select id="LikeCustomer" parameterType="int" resultMap="customerMapper">
+        SELECT * FROM customer
+         <where>
+             <if test="keyWord!=null and keyWord!=''">
+                 AND c_username LIKE CONCAT ('%',#{keyWord},'%')
+             </if>
+             <if test="c_sex!=null and c_sex!=-1">
+                 AND c_sex LIKE CONCAT ('%',#{c_sex},'%')
+             </if>
+         </where>
+         LIMIT #{firstIndex},#{pageSize}
+    </select>
+    <!--根据条件查询数量-->
+    <select id="LikeCustomerCount" resultType="int">
+        SELECT COUNT(*) FROM customer
+        <where>
+            <if test="keyWord!=null and keyWord!=''">
+                AND c_username LIKE CONCAT ('%',#{keyWord},'%')
+            </if>
+            <if test="c_sex!=null and c_sex!=-1">
+                AND c_sex LIKE CONCAT ('%',#{c_sex},'%')
+            </if>
+        </where>
+    </select>
+    <!--删除客户-->
+    <delete id="deleteCustomer">
+        DELETE FROM customer WHERE id = #{id}
+    </delete>
+    <!--客户更新-->
+
+    <!--根据顾客id获取顾客信息-->
+    <select id="queryCustomer" parameterType="int" resultMap="customerMapper">
+        SELECT * FROM customer WHERE id = #{id}
+    </select>
+    <!--添加顾客-->
+    <insert id="addCustomer">
+        INSERT INTO customer (id,c_username,c_nickName,c_sex,c_picUrl,c_telephone,c_address,c_zipCode,c_email,c_intro,c_createTime) VALUES (NULL,#{c_username},#{c_nickName},#{c_sex},#{c_picUrl},#{c_telephone},#{c_address},#{c_zipCode},#{c_email},#{c_intro},#{c_createTime})
+    </insert>
+    <!--判断顾客是否存在-->
+    <select id="existCustomer" parameterType="String" resultType="int">
+        SELECT COUNT(id) FROM customer
+        <where>
+            c_username = #{c_username}
+            <if test="id!=null"> AND id!=#{id}</if>
+        </where>
+    </select>
+
+    <!--用户登陆-->
+    <select id="customerLogin" resultMap="customerMapper">
+        SELECT * FROM customer WHERE c_username = #{c_username} AND c_password = #{c_password}
+    </select>
+    <!--顾客更新-->
+    <update id="updateCustomer">
+        UPDATE customer
+        <set>
+            <if test="c_password!=null and c_password.length()>0">
+                c_password = #{c_password} ,
+            </if>
+            <if test="c_sex!=null">
+                c_sex = #{c_sex} ,
+            </if>
+            <if test="c_nickName!=null and c_nickName.length()>0">
+                c_nickName = #{c_nickName} ,
+            </if>
+            <if test="c_telephone!=null and c_telephone.length()>0">
+                c_telephone = #{c_telephone} ,
+            </if>
+            <if test="c_address!=null and c_address.length()>0 ">
+                c_address = #{c_address} ,
+            </if>
+            <if test="c_zipCode!=null and c_zipCode.length()>0">
+                c_zipCode = #{c_zipCode} ,
+            </if>
+            <if test="c_email!=null and c_email.length()>0">
+                c_email = #{c_email} ,
+            </if>
+            <if test="c_picUrl!=null and c_picUrl.length()>0">
+                c_picUrl = #{c_picUrl} ,
+            </if>
+            <if test="c_intro!=null and c_intro.length()>0">
+                c_intro = #{c_intro} ,
+            </if>
+        </set>
+        <where>
+            <if test="id!=null">
+                AND id = #{id}
+            </if>
+        </where>
+
+    </update>
+
+</mapper>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为OrdersDao接口方法提供sql语句配置 -->
+<mapper namespace="com.lyh.my_ebuy_ssm.dao.OrdersDao">
+    <resultMap id="ordersMapper" type="com.lyh.my_ebuy_ssm.model.Orders">
+        <id property="id" column="id"></id>
+        <result property="orderNo" column="orderNo"></result>
+        <result property="o_customerId" column="o_customerId"></result>
+        <result property="o_sendName" column="o_sendName"></result>
+        <result property="o_sendAddress" column="o_sendAddress"></result>
+        <result property="o_sendZipCode" column="o_sendZipCode"></result>
+        <result property="o_sendTel" column="o_sendTel"></result>
+        <result property="o_payment" column="o_payment"></result>
+        <result property="o_meno" column="o_meno"></result>
+        <result property="o_createTime" column="o_createTime"></result>
+        <result property="o_dealTime" column="o_dealTime"></result>
+        <result property="o_tag" column="o_tag"></result>
+    </resultMap>
+
+    <resultMap id="orderDetailMapper" type="com.lyh.my_ebuy_ssm.model.OrderDetail">
+        <id property="id" column="id"></id>
+        <result property="orderNo" column="orderNo"></result>
+        <result property="productId" column="productId"></result>
+        <result property="od_price" column="od_price"></result>
+        <result property="od_originalPrice" column="od_originalPrice"></result>
+        <result property="od_number" column="od_number"></result>
+        <collection property="product" ofType="com.lyh.my_ebuy_ssm.model.Product">
+            <id property="id" column="id"></id>
+            <result property="productTypeId" column="productTypeId"></result>
+            <result property="p_name" column="p_name"></result>
+            <result property="p_orderNum" column="p_orderNum"></result>
+            <result property="p_description" column="p_description"></result>
+            <result property="p_content" column="p_content"></result>
+            <result property="p_price" column="p_price"></result>
+            <result property="p_originalPrice" column="p_originalPrice"></result>
+            <result property="p_picUrl" column="p_picUrl"></result>
+            <result property="p_number" column="p_number"></result>
+            <result property="p_click" column="p_click"></result>
+            <result property="p_onSale" column="p_onSale"></result>
+            <result property="p_createTime" column="p_createTime"></result>
+            <result property="p_creatorId" column="p_creatorId"></result>
+            <result property="p_finalEditorId" column="p_finalEditorId"></result>
+            <result property="p_updateTime" column="p_updateTime"></result>
+        </collection>
+    </resultMap>
+
+    <!--添加订单-->
+    <insert id="doSubmitOrders">
+        INSERT INTO orders (id,orderNo,o_customerId,o_sendName,o_sendAddress,o_sendZipCode,o_sendTel,o_payment,o_meno,o_createTime,o_dealTime,o_tag)
+        VALUES (NULL,#{orderNo},#{o_customerId},#{o_sendName},#{o_sendAddress},#{o_sendZipCode},#{o_sendTel},#{o_payment},#{o_meno},#{o_createTime},#{o_dealTime},#{o_tag})
+    </insert>
+    <!--添加订单详情-->
+    <insert id="doSubmitOrderDetail">
+        INSERT INTO orderDetail (id,orderNo,productId,od_price,od_originalPrice,od_number)
+        VALUES (NULL,#{orderNo},#{productId},#{od_price},#{od_originalPrice},#{od_number})
+    </insert>
+
+    <!--分页查询订单记录-->
+    <select id="queryOrdersPage" parameterType="int"  resultMap="ordersMapper">
+        SELECT * FROM orders LIMIT #{firstIndex},#{pageSize}
+    </select>
+    <!--查询订单总记录数-->
+    <select id="OrderCount" resultType="int">
+        SELECT COUNT(*) FROM orders
+    </select>
+
+    <select id="orderDetails" resultMap="orderDetailMapper">
+        SELECT od.productId,p_name,p_picUrl,od.od_price,od.od_originalPrice,od.od_number FROM orderdetail od,product p, orders o where od.productId=p.id and o.orderNo=od.orderNo and od.orderNo = #{a.orderNo}
+    </select>
+
+    <update id="UpdateOrder">
+        UPDATE orders
+        <set>
+            <if test="o_sendAddress!=null">
+                o_sendAddress = #{o_sendAddress} ,
+            </if>
+            <if test="o_sendZipCode!=null">
+                o_sendZipCode = #{o_sendZipCode} ,
+            </if>
+            <if test="o_sendTel!=null">
+                o_sendTel = #{o_sendTel},
+            </if>
+            <if test="o_payment!=null">
+                o_payment = #{o_payment}
+            </if>
+            <if test="o_meno!=null">
+                o_meno = #{o_meno}
+            </if>
+            <if test="o_dealTime!=null">
+                o_dealTime = #{o_dealTime}
+            </if>
+        </set>
+        <where>
+            <if test="orderNo!=null">
+                AND orderNo = #{orderNo}
+            </if>
+        </where>
+    </update>
+
+    <!--根据条件查询订单-->
+    <select id="LikeOrders" parameterType="int" resultMap="ordersMapper">
+        SELECT * FROM orders
+        <where>
+            <if test="keyWord!=null and keyWord!=''">
+                AND orderNo LIKE CONCAT (#{keyWord},'%')
+            </if>
+        </where>
+        LIMIT #{firstIndex},#{pageSize}
+    </select>
+    <!--根据条件查询订单数量-->
+    <select id="LikeOrdersCount" resultType="int">
+        SELECT COUNT(*) FROM orders
+        <where>
+            <if test="keyWord!=null and keyWord!=''">
+                AND orderNo LIKE CONCAT (#{keyWord},'%')
+            </if>
+
+        </where>
+    </select>
+
+</mapper>

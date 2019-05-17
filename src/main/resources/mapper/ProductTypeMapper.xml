@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为ProductDao接口方法提供sql语句配置 -->
+<mapper namespace="com.lyh.my_ebuy_ssm.dao.ProductTypeDao">
+
+    <resultMap id="ProductTypeMapper" type="com.lyh.my_ebuy_ssm.model.ProductType">
+        <id property="id" column="id"></id>
+        <result property="pt_name" column="pt_name"></result>
+        <result property="pt_linkUrl" column="pt_linkUrl"></result>
+        <result property="pt_imageUrl" column="pt_imageUrl"></result>
+        <result property="pt_intro" column="pt_intro"></result>
+        <result property="pt_orderNum" column="pt_orderNum"></result>
+        <result property="pt_createTime" column="pt_createTime"></result>
+        <result property="pt_creatorId" column="pt_creatorId"></result>
+        <result property="pt_finalEditorId" column="pt_finalEditorId"></result>
+        <result property="pt_updateTime" column="pt_updateTime"></result>
+        <collection property="admin" ofType="com.lyh.my_ebuy_ssm.model.Admin">
+            <id property="id" column="id"></id>
+            <result column="username" property="username"></result>
+        </collection>
+        <collection property="product" ofType="com.lyh.my_ebuy_ssm.model.Product">
+            <id property="id" column="id"></id>
+            <result property="productTypeId" column="productTypeId"></result>
+            <result property="p_name" column="p_name"></result>
+            <result property="p_orderNum" column="p_orderNum"></result>
+            <result property="p_description" column="p_description"></result>
+            <result property="p_content" column="p_content"></result>
+            <result property="p_price" column="p_price"></result>
+            <result property="p_originalPrice" column="p_originalPrice"></result>
+            <result property="p_picUrl" column="p_picUrl"></result>
+            <result property="p_click" column="p_click"></result>
+            <result property="p_onSale" column="p_onSale"></result>
+            <result property="p_createTime" column="p_createTime"></result>
+            <result property="p_creatorId" column="p_creatorId"></result>
+            <result property="p_finalEditorId" column="p_finalEditorId"></result>
+            <result property="p_updateTime" column="p_updateTime"></result>
+        </collection>
+    </resultMap>
+
+    <resultMap id="ProductTypeMap" type="com.lyh.my_ebuy_ssm.model.ProductType">
+        <id property="id" column="id"></id>
+        <result property="pt_name" column="pt_name"></result>
+        <result property="pt_linkUrl" column="pt_linkUrl"></result>
+        <result property="pt_imageUrl" column="pt_imageUrl"></result>
+        <result property="pt_intro" column="pt_intro"></result>
+        <result property="pt_orderNum" column="pt_orderNum"></result>
+        <result property="pt_createTime" column="pt_createTime"></result>
+        <result property="pt_creatorId" column="pt_creatorId"></result>
+        <result property="pt_finalEditorId" column="pt_finalEditorId"></result>
+        <result property="pt_updateTime" column="pt_updateTime"></result>
+    </resultMap>
+
+
+    <!--分页查询-->
+    <select id="queryProductTypesPage" parameterType="int"  resultMap="ProductTypeMapper">
+        SELECT * FROM producttype  INNER JOIN admin ON admin.id = producttype.pt_creatorId  ORDER BY pt_orderNum DESC LIMIT #{firstIndex},#{pageSize}
+    </select>
+
+    <!--查询总记录数-->
+    <select id="ProductTypeCount" resultType="int">
+        SELECT COUNT(*) FROM producttype
+    </select>
+    <!--查询产品类别详细信息-->
+    <select id="getProductType" resultMap="ProductTypeMap">
+        SELECT * FROM producttype WHERE id = #{id}
+    </select>
+    <!--查询产品数量-->
+    <select id="getProductNumber" parameterType="int" resultType="int">
+        SELECT COUNT(productTypeId) FROM product  WHERE productTypeId = #{id}
+    </select>
+    <update id="updateProductType">
+        UPDATE producttype
+         <set>
+             <if test="pt_name!=null and pt_name.trim().length()>0">pt_name = #{pt_name} ,</if>
+             <if test="pt_imageUrl!=null and pt_imageUrl.trim().length()>0">pt_imageUrl = #{pt_imageUrl} ,</if>
+             <if test="pt_orderNum!=null and pt_orderNum>=0">pt_orderNum = #{pt_orderNum} ,</if>
+             <if test="pt_linkUrl!=null and pt_linkUrl.trim().length()>0">pt_linkUrl = #{pt_linkUrl} ,</if>
+             <if test="pt_intro!=null and pt_intro.trim().length()>0">pt_intro = #{pt_intro} ,</if>
+             <if test="pt_finalEditorId!=null">pt_finalEditorId = #{pt_finalEditorId},</if>
+             <if test="pt_updateTime!=null">pt_updateTime = #{pt_updateTime}</if>
+
+         </set>
+        <where>
+            <if test="id!=null">
+                AND id = #{id}
+            </if>
+        </where>
+    </update>
+    <!--删除产品类别-->
+    <delete id="deleteProductType" parameterType="int">
+        DELETE FROM producttype WHERE id = #{id}
+    </delete>
+    <!--添加产品类别-->
+    <insert id="addProductType">
+          INSERT INTO producttype (id,pt_name,pt_linkUrl,pt_imageUrl,pt_intro,pt_orderNum,pt_creatorId,pt_createTime) VALUES(NULL,#{pt_name},#{pt_linkUrl},#{pt_imageUrl},#{pt_intro},#{pt_orderNum},#{pt_creatorId},#{pt_createTime})
+    </insert>
+    <!--查询是否存在产品分类名称-->
+    <select id="exitsProductType" parameterType="String" resultType="int">
+        SELECT COUNT(id) FROM producttype
+        <where>
+             pt_name = #{pt_name}
+            <if test="id!=null"> AND id!=#{id}</if>
+        </where>
+    </select>
+    <!--获取产品分类列表-->
+    <select id="queryProductType" resultMap="ProductTypeMap">
+        SELECT pt_name,id FROM producttype
+    </select>
+    <!--模糊查询产品分类-->
+    <select id="LikeProductTypes" resultMap="ProductTypeMapper">
+        SELECT * FROM producttype INNER JOIN admin ON admin.id = producttype.pt_creatorId
+
+             <choose>
+                 <when test="keyWord!=null and keyWord.trim().length()>0">
+                     AND pt_name LIKE CONCAT ('%',#{keyWord},'%')
+                 </when>
+                 <otherwise>
+
+                 </otherwise>
+             </choose>
+
+        LIMIT #{firstIndex},#{pageSize}
+    </select>
+    <!---统计查询结果-->
+    <select id="LikeProductTypeCount" resultType="int">
+        SELECT COUNT(*) FROM producttype INNER JOIN admin ON admin.id = producttype.pt_creatorId
+
+            <choose>
+                <when test="keyWord!=null and keyWord.trim().length()>0">
+                    AND pt_name LIKE CONCAT ('%',#{keyWord},'%')
+                </when>
+
+                <otherwise>
+
+                </otherwise>
+            </choose>
+
+    </select>
+
+
+
+</mapper>

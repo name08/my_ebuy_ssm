@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 设置为ProductDao接口方法提供sql语句配置 -->
+<mapper namespace="com.lyh.my_ebuy_ssm.dao.ProductDao">
+
+    <resultMap id="productMapper" type="com.lyh.my_ebuy_ssm.model.Product">
+        <id property="id" column="id"></id>
+        <result property="productTypeId" column="productTypeId"></result>
+        <result property="p_name" column="p_name"></result>
+        <result property="p_orderNum" column="p_orderNum"></result>
+        <result property="p_description" column="p_description"></result>
+        <result property="p_content" column="p_content"></result>
+        <result property="p_price" column="p_price"></result>
+        <result property="p_originalPrice" column="p_originalPrice"></result>
+        <result property="p_picUrl" column="p_picUrl"></result>
+        <result property="p_number" column="p_number"></result>
+        <result property="p_click" column="p_click"></result>
+        <result property="p_onSale" column="p_onSale"></result>
+        <result property="p_createTime" column="p_createTime"></result>
+        <result property="p_creatorId" column="p_creatorId"></result>
+        <result property="p_finalEditorId" column="p_finalEditorId"></result>
+        <result property="p_updateTime" column="p_updateTime"></result>
+        <collection property="productType" ofType="com.lyh.my_ebuy_ssm.model.ProductType" >
+            <id column="id" property="id"></id>
+            <result column="pt_name" property="pt_name"></result>
+        </collection>
+        <collection property="admin"  ofType="com.lyh.my_ebuy_ssm.model.Admin" >
+            <id property="id" column="id"></id>
+            <result column="username" property="username"></result>
+        </collection>
+    </resultMap>
+
+    <resultMap id="productMapper2" type="com.lyh.my_ebuy_ssm.model.Product">
+    <id property="id" column="id"></id>
+    <result property="productTypeId" column="productTypeId"></result>
+    <result property="p_name" column="p_name"></result>
+    <result property="p_orderNum" column="p_orderNum"></result>
+    <result property="p_description" column="p_description"></result>
+    <result property="p_content" column="p_content"></result>
+    <result property="p_price" column="p_price"></result>
+    <result property="p_originalPrice" column="p_originalPrice"></result>
+    <result property="p_picUrl" column="p_picUrl"></result>
+    <result property="p_number" column="p_number"></result>
+    <result property="p_click" column="p_click"></result>
+    <result property="p_onSale" column="p_onSale"></result>
+    <result property="p_createTime" column="p_createTime"></result>
+    <result property="p_creatorId" column="p_creatorId"></result>
+    <result property="p_finalEditorId" column="p_finalEditorId"></result>
+    <result property="p_updateTime" column="p_updateTime"></result>
+        <collection property="productType" ofType="com.lyh.my_ebuy_ssm.model.ProductType" >
+            <id column="id" property="id"></id>
+            <result column="pt_name" property="pt_name"></result>
+        </collection>
+        <collection property="admin"  ofType="com.lyh.my_ebuy_ssm.model.Admin" >
+            <id property="id" column="id"></id>
+            <result column="username" property="username"></result>
+        </collection>
+</resultMap>
+
+    <!--分页查询-->
+    <select id="queryProductsPage" parameterType="int"  resultMap="productMapper">
+        SELECT * FROM (product INNER JOIN admin  ON admin.id = product.p_creatorId) INNER JOIN producttype ON producttype.id = product.productTypeId ORDER BY p_orderNum DESC , p_price ASC , p_click DESC , p_number ASC LIMIT #{firstIndex},#{pageSize}
+    </select>
+    <!--查询总记录数-->
+    <select id="ProductCount" resultType="int">
+        SELECT COUNT(*) FROM product
+    </select>
+    <!--更新产品-->
+    <update id="updateProduct">
+        UPDATE product
+        <set>
+            <if test="productTypeId!=null and productTypeId!=0">
+                productTypeId = #{productTypeId} ,
+            </if>
+            <if test="p_name!=null and p_name.trim().length()>0">
+                p_name = #{p_name} ,
+            </if>
+            <if test="p_orderNum!=null and p_orderNum>=0">
+                p_orderNum = #{p_orderNum} ,
+            </if>
+            <if test="p_description!=null and p_description.trim().length()>0">
+                p_description = #{p_description} ,
+            </if>
+            <if test="p_content!=null and p_content.trim().length()>0">
+                p_content = #{p_content} ,
+            </if>
+            <if test="p_originalPrice!=null and p_originalPrice>p_price and p_originalPrice>0">
+                p_originalPrice = #{p_originalPrice} ,
+            </if>
+            <if test="p_price!=null and p_price>0 ">
+                p_price = #{p_price} ,
+            </if>
+            <if test="p_picUrl!=null and p_picUrl.trim().length()>0">
+                p_picUrl = #{p_picUrl} ,
+            </if>
+            <if test="p_number!=null">
+                p_number = #{p_number} ,
+            </if>
+            <if test="p_click!=null">
+                p_click = #{p_click} ,
+            </if>
+            <if test="p_onSale!=null">
+                p_onSale = #{p_onSale} ,
+            </if>
+            <if test="p_updateTime!=null">
+                p_updateTime = #{p_updateTime},
+            </if>
+            <if test="p_finalEditorId!=null">
+                p_finalEditorId = #{p_finalEditorId}
+            </if>
+        </set>
+        <where>
+            <if test="id!=null">
+                AND id = #{id}
+            </if>
+        </where>
+
+    </update>
+    <!--删除产品-->
+    <delete id="deleteProduct">
+         DELETE FROM product WHERE id = #{id}
+    </delete>
+    <!--添加产品-->
+    <insert id="addProduct">
+        INSERT INTO product (id,productTypeId,p_name,p_orderNum,p_description,p_content,p_price,p_originalPrice,p_picUrl,p_number,p_click,p_onSale,p_creatorId,p_createTime) VALUES (NULL ,#{productTypeId},#{p_name} ,#{p_orderNum} , #{p_description} , #{p_content} , #{p_price} , #{p_originalPrice} , #{p_picUrl} ,#{p_number} , #{p_click} ,#{p_onSale},#{p_creatorId},#{p_createTime})
+    </insert>
+    <!--查询产品信息-->
+    <select id="getProduct" parameterType="int" resultMap="productMapper2">
+        SELECT * FROM product WHERE id = #{id}
+    </select>
+    <!--模糊查询产品信息-->
+    <select id="LikeProducts" resultMap="productMapper2">
+        SELECT * FROM (product INNER JOIN admin  ON admin.id = product.p_creatorId) INNER JOIN producttype ON producttype.id = product.productTypeId
+        <choose>
+            <when test="keyWord!=null and keyWord.length()>0">
+                AND CONCAT(p_name,admin.username) LIKE CONCAT ('%',#{keyWord},'%')
+            </when>
+            <when test="productTypeId!=null and productTypeId!=0">
+                AND productTypeId LIKE CONCAT ('%',#{productTypeId},'%')
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+        LIMIT #{firstIndex},#{pageSize}
+    </select>
+    <!---统计查询结果-->
+    <select id="LikeProductCount" resultType="int">
+        SELECT COUNT(productTypeId) FROM (product INNER JOIN admin  ON admin.id = product.p_creatorId) INNER JOIN producttype ON producttype.id = product.productTypeId
+        <choose>
+            <when test="keyWord!=null and keyWord.length()>0">
+                AND CONCAT(p_name,admin.username) LIKE CONCAT ('%',#{keyWord},'%')
+            </when>
+            <when test="productTypeId!=null and productTypeId!=0">
+                AND productTypeId LIKE CONCAT ('%',#{productTypeId},'%')
+            </when>
+            <otherwise>
+
+            </otherwise>
+        </choose>
+
+    </select>
+
+    <!--判断产品是否存在-->
+    <select id="existProduct" parameterType="String" resultType="int">
+        SELECT COUNT(id) FROM product
+        <where>
+            p_name = #{p_name}
+            <if test="id!=null"> AND id!=#{id}</if>
+        </where>
+    </select>
+
+    <!--根据状态符排序,status=1按照优先级降序,status=2按照创建时间降序,取前4条记录-->
+    <select id="queryProducts" resultType="com.lyh.my_ebuy_ssm.model.Product">
+        SELECT * FROM product ORDER BY
+        <if test="status!=null">
+            <if test="status==1">
+                p_orderNum DESC
+            </if>
+            <if test="status==2">
+                p_createTime DESC
+            </if>
+        </if>
+           LIMIT 0,4
+    </select>
+
+</mapper>
